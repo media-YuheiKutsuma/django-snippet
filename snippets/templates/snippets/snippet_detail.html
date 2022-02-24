@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load pygmentize %}
+{% load django_bootstrap5 %}
+{% block extraheader %}
+    <style>{% pygments_css %}</style>
+{% endblock %}
+
+{% block main %}
+    <h2>{{ snippet.title }} by {{ snippet.created_by.username }}</h2>
+
+    <div class="snippet-date">
+        投稿日： {{ snippet.created_at|date:"DATETIME_FORMAT" }}
+        {% if user.is_authenticated and snippet.created_by_id == user.id %}
+            <a href="{% url 'snippet_edit' snippet.id %}">編集</a>    
+        {% endif %}
+    </div>
+    
+    <div class="source-code">
+        {{ snippet.code|pygmentize:"python3" }}
+    </div>
+    <p>{{ snippet.description }}</p>
+    <hr>
+    <div>
+        <h2>コメント一覧</h2>
+        {% for c in comment %}
+        <div>
+            <p>{{ c.text }}</p>
+            <span>{{ c.commented_at }}</span>
+            <span>{{ c.commented_by.username }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <hr>
+    <form action="{% url 'comment_new' snippet.id %}" method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% bootstrap_button button_type="submit" content="コメント" %}
+    </form>
+{% endblock %}
